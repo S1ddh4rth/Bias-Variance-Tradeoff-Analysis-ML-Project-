@@ -4,7 +4,7 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import numpy as np
 import torch
-import Neural_Network as NN
+from Neural_Network import *
 # import Test as NN
 
 import torch
@@ -15,54 +15,51 @@ import numpy as np
 def main():
     # Define the sizes
     input_size = 2
-    hidden_size1 = 16
-    hidden_size2 = 16
+    hidden_size = 20
     output_size = 6
 
-    # Set random seeds for reproducibility
-    torch.manual_seed(14)
-    np.random.seed(14)
-
-    # Create an instance of the neural network
-    model = NN.RandomNeuralNetwork(input_size, hidden_size1, hidden_size2, output_size)
+    # Create an instance of the original neural network
+    original_model = RandomNeuralNetwork(input_size, hidden_size, hidden_size, output_size)
 
     # Generate uniformly sampled input data with noise
     num_samples = 500
     noise_mean = 0
     noise_std = 0.4
-    input_data, noisy_input_data = NN.generate_data_with_noise(input_size, num_samples, noise_mean, noise_std)
+    input_data, noisy_input_data = generate_data_with_noise(input_size, num_samples, noise_mean, noise_std)
 
-    # Get model predictions for the input data
-    output = model(input_data)
-    predicted_labels = output.argmax(dim=1)
+    # Get original model predictions for the input data
+    original_output = original_model(input_data)
+    original_predicted_labels = original_output.argmax(dim=1)
 
     # Plot data points with noise and labels
-    NN.plot_data_with_labels(noisy_input_data, predicted_labels)
+    plot_data_with_labels(noisy_input_data, original_predicted_labels, "Ground truth decision boundary")
 
     # Plot original decision boundary
-    NN.plot_decision_boundaries(model, input_data) ######################################################################
+    plot_data_with_decision_boundary(original_model, input_data, noisy_input_data, original_predicted_labels,
+                                      "Ground truth decision boundary")
 
-    # Training parameters
-    labels = torch.LongTensor(predicted_labels)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    # Train and plot 5 models of increasing complexity
+    hidden_size = 0
+    for i in range(9):
+        # Increase the hidden size for each subsequent model
+        hidden_size += 4
+        # Create an instance of the neural network with increased complexity
+        model = RandomNeuralNetwork(input_size, hidden_size, hidden_size, output_size)
 
-#-----------------------------------------------------------------------------------------------------------------------------------------
-    # Train the model
-    losses = NN.train_model(model, input_data, noisy_input_data, labels, criterion, optimizer) ################################
+        # Training parameters
+        labels = torch.LongTensor(original_predicted_labels)
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    # Plot the training loss
-    NN.plot_training_loss(losses) ###################################
+        # Train the model
+        losses = train_model(model, input_data, noisy_input_data, labels, criterion, optimizer)
 
-    # Plot decision boundaries after training
-    NN.plot_decision_boundaries(model, input_data) ########################################################
+        # Plot data points with decision boundary
+        plot_data_with_decision_boundary(model, input_data, noisy_input_data, original_predicted_labels,
+                                         f"Hidden layer size: {hidden_size}")
 
-    # Plot data points with noise and labels again to overlay decision boundaries
-    NN.plot_data_with_labels(noisy_input_data, predicted_labels)
-
-
-
+        # Plot the training loss
+        # plot_training_loss(losses)
 
 if __name__ == "__main__":
     main()
-

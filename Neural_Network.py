@@ -12,6 +12,7 @@ class RandomNeuralNetwork(nn.Module):
         self.fc3 = nn.Linear(hidden_size2, output_size)
 
         # Initialize weights with a seed
+        torch.manual_seed(42)
         nn.init.kaiming_normal_(self.fc1.weight)
         nn.init.kaiming_normal_(self.fc2.weight)
         nn.init.kaiming_normal_(self.fc3.weight)
@@ -31,17 +32,17 @@ def generate_data_with_noise(input_size, num_samples, noise_mean, noise_std):
     return input_data, noisy_input_data
 
 
-def plot_data_with_labels(input_data, predicted_labels):
+def plot_data_with_labels(input_data, predicted_labels, title=""):
     plt.figure(figsize=(8, 6))
     plt.scatter(input_data[:, 0], input_data[:, 1], c=predicted_labels, cmap='viridis', alpha=0.5)
     plt.colorbar(label='Class')
-    plt.title('Data Points with Predicted Labels and Gaussian Noise')
+    plt.title(f'Data Points with Predicted Labels and Gaussian Noise\n{title}')
     plt.xlabel('Feature 1')
     plt.ylabel('Feature 2')
     plt.show()
 
 
-def train_model(model, input_data, noisy_input_data, labels, criterion, optimizer, num_epochs=1000):
+def train_model(model, input_data, noisy_input_data, labels, criterion, optimizer, num_epochs=500):
     model.train()
     losses = []
 
@@ -70,7 +71,8 @@ def plot_training_loss(losses):
     plt.show()
 
 
-def plot_decision_boundaries(model, input_data):
+
+def plot_decision_boundaries(model, input_data, title=""):
     x_min, x_max = input_data[:, 0].min() - 1, input_data[:, 0].max() + 1
     y_min, y_max = input_data[:, 1].min() - 1, input_data[:, 1].max() + 1
     xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1),
@@ -80,55 +82,33 @@ def plot_decision_boundaries(model, input_data):
     grid_output = model(grid_input)
     grid_labels = grid_output.argmax(axis=1)
     plt.contourf(xx, yy, grid_labels.reshape(xx.shape), alpha=0.3, cmap='viridis')
+    plt.title(f'Decision Boundary\n{title}')
 
+# def plot_data_with_decision_boundary(model, input_data, noisy_input_data, labels):
+#     plt.figure(figsize=(8, 6))
+#
+#     # Plot decision boundary
+#     plot_decision_boundaries(model, input_data)
+#
+#     # Plot data points with noise and labelsf
+#     plt.scatter(noisy_input_data[:, 0], noisy_input_data[:, 1], c=labels, cmap='viridis', alpha=0.5)
+#     plt.colorbar(label='Class')
+#     plt.title('Data Points with Decision Boundary')
+#     plt.xlabel('Feature 1')
+#     plt.ylabel('Feature 2')
+#
+#     plt.show()
+def plot_data_with_decision_boundary(model, input_data, noisy_input_data, labels, title=""):
+    plt.figure(figsize=(8, 6))
 
-def main():
-    # Define the sizes
-    input_size = 2
-    hidden_size1 = 16
-    hidden_size2 = 16
-    output_size = 6
-
-    # Set random seeds for reproducibility
-    torch.manual_seed(14)
-    np.random.seed(14)
-
-    # Create an instance of the neural network
-    model = RandomNeuralNetwork(input_size, hidden_size1, hidden_size2, output_size)
-
-    # Generate uniformly sampled input data with noise
-    num_samples = 500
-    noise_mean = 0
-    noise_std = 0.4
-    input_data, noisy_input_data = generate_data_with_noise(input_size, num_samples, noise_mean, noise_std)
-
-    # Get model predictions for the input data
-    output = model(input_data)
-    predicted_labels = output.argmax(dim=1)
+    # Plot decision boundary
+    plot_decision_boundaries(model, input_data, title)
 
     # Plot data points with noise and labels
-    plot_data_with_labels(noisy_input_data, predicted_labels)
+    plt.scatter(noisy_input_data[:, 0], noisy_input_data[:, 1], c=labels, cmap='viridis', alpha=0.5)
+    plt.colorbar(label='Class')
+    plt.title(f'Data Points with Decision Boundary\n{title}')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
 
-    # Plot original decision boundary
-    plot_decision_boundaries(model, input_data)
-
-    # Training parameters
-    labels = torch.LongTensor(predicted_labels)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
-    # Train the model
-    losses = train_model(model, input_data, noisy_input_data, labels, criterion, optimizer)
-
-    # Plot the training loss
-    plot_training_loss(losses)
-
-    # Plot decision boundaries after training
-    plot_decision_boundaries(model, input_data)
-
-    # Plot data points with noise and labels again to overlay decision boundaries
-    plot_data_with_labels(noisy_input_data, predicted_labels)
-
-
-if __name__ == "__main__":
-    main()
+    plt.show()
