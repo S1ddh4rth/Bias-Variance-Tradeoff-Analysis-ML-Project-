@@ -12,7 +12,7 @@ class RandomNeuralNetwork(nn.Module):
         self.fc3 = nn.Linear(hidden_size2, output_size)
 
         # Initialize weights with a seed
-        torch.manual_seed(24)
+        torch.manual_seed(42)
         nn.init.kaiming_normal_(self.fc1.weight)
         nn.init.kaiming_normal_(self.fc2.weight)
         nn.init.kaiming_normal_(self.fc3.weight)
@@ -32,23 +32,23 @@ def generate_data_with_noise(input_size, num_samples, noise_mean, noise_std):
     return input_data, noisy_input_data
 
 
-def plot_data_with_labels(input_data, predicted_labels):
+def plot_data_with_labels(input_data, predicted_labels, title=""):
     plt.figure(figsize=(8, 6))
     plt.scatter(input_data[:, 0], input_data[:, 1], c=predicted_labels, cmap='viridis', alpha=0.5)
     plt.colorbar(label='Class')
-    plt.title('Data Points with Predicted Labels and Gaussian Noise')
+    plt.title(f'Data Points with Predicted Labels and Gaussian Noise\n{title}')
     plt.xlabel('Feature 1')
     plt.ylabel('Feature 2')
     plt.show()
 
 
-def train_model(model, input_data, noisy_input_data, labels, criterion, optimizer, num_epochs=500):
+def train_model(model, input_data, labels, criterion, optimizer, num_epochs=500):
     model.train()
     losses = []
 
     for epoch in range(num_epochs):
         optimizer.zero_grad()
-        output = model(noisy_input_data)
+        output = model(input_data)
         loss = criterion(output, labels)
         loss.backward()
         optimizer.step()
@@ -61,17 +61,7 @@ def train_model(model, input_data, noisy_input_data, labels, criterion, optimize
     return losses
 
 
-def plot_training_loss(losses):
-    plt.figure(figsize=(8, 6))
-    plt.plot(losses, label='Training Loss')
-    plt.title('Training Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.show()
-
-
-def plot_decision_boundaries(model, input_data):
+def plot_decision_boundaries(model, input_data, labels, title=""):
     x_min, x_max = input_data[:, 0].min() - 1, input_data[:, 0].max() + 1
     y_min, y_max = input_data[:, 1].min() - 1, input_data[:, 1].max() + 1
     xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1),
@@ -81,17 +71,20 @@ def plot_decision_boundaries(model, input_data):
     grid_output = model(grid_input)
     grid_labels = grid_output.argmax(axis=1)
     plt.contourf(xx, yy, grid_labels.reshape(xx.shape), alpha=0.3, cmap='viridis')
+    plt.title(f'Decision Boundary\n{title}')
+    plt.show()
 
-def plot_data_with_decision_boundary(model, input_data, noisy_input_data, labels):
+
+def plot_data_with_decision_boundary(model, input_data, labels, title=""):
     plt.figure(figsize=(8, 6))
 
     # Plot decision boundary
-    plot_decision_boundaries(model, input_data)
+    plot_decision_boundaries(model, input_data, labels, title)
 
     # Plot data points with noise and labels
-    plt.scatter(noisy_input_data[:, 0], noisy_input_data[:, 1], c=labels, cmap='viridis', alpha=0.5)
+    plt.scatter(input_data[:, 0], input_data[:, 1], c=labels, cmap='viridis', alpha=0.5)
     plt.colorbar(label='Class')
-    plt.title('Data Points with Decision Boundary')
+    plt.title(f'Data Points with Decision Boundary\n{title}')
     plt.xlabel('Feature 1')
     plt.ylabel('Feature 2')
 
