@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 def main():
     # Define the sizes
     input_size = 2
-    hidden_size = 20
+    hidden_size = 8
     output_size = 4
 
     # Create an instance of the original neural network
@@ -15,7 +15,7 @@ def main():
     # Generate uniformly sampled input data with noise
     num_samples = 1000
     noise_mean = 0
-    noise_std = 0.3
+    noise_std = 0.5
     input_data, noisy_input_data = generate_data_with_noise(input_size, num_samples, noise_mean, noise_std)
 
     # Get original model predictions for the input data

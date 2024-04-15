@@ -12,7 +12,7 @@ class RandomNeuralNetwork(nn.Module):
         self.fc3 = nn.Linear(hidden_size2, output_size)
 
         # Initialize weights with a seed
-        torch.manual_seed(42)
+        torch.manual_seed(2)
         nn.init.kaiming_normal_(self.fc1.weight)
         nn.init.kaiming_normal_(self.fc2.weight)
         nn.init.kaiming_normal_(self.fc3.weight)
